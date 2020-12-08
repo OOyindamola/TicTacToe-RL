@@ -6,7 +6,9 @@ import numpy as np
 GAMMA = float(input())
 
 S = ['A', 'B', 'C', 'D']
+SS = ['A', 'C', 'D']
 A = ['l', 'r']
+BAs = range(10)
 
 def Build_MDP():
     def P(s,a):
@@ -25,29 +27,37 @@ def Build_MDP():
 
 
 def Q_determine(pi):
-    X = [ Q_select(pi,s) for s in S ]
+    X = [ Q_select(pi,s) for s in S]
     return X
 
 def Qdisp(Q):
     display2([Q[(s,Q_select(Q,s))] for s in S])
 
 def Q_select( Q, s ):
+    AA = A
+    if s=='B':
+        AA = BAs
+
     x = ra.random()
     if x < .5:
-        return A[int(ra.random()*len(A))]
+        return AA[int(ra.random()*len(AA))]
     
     maxv=-999999
     maxa='error'
-    for a in A:
+    for a in AA:
         x = Q[(s,a)]
         if x > maxv:
             maxv = x
             maxa = a
     return maxa
 
-def DQ(P, s0=(0,0), rate=.1, DoubleQ=True):
-    NSA = {(s,a):0 for s in S for a in A}
-    Q = [{ (s,a):0 for s in S for a in A },{ (s,a):0 for s in S for a in A }] 
+def DQ(P, s0='A', rate=.1, DoubleQ=True):
+    NSA = {(s,a):0 for s in SS for a in A}
+    Q = [{ (s,a):0 for s in SS for a in A },{ (s,a):0 for s in SS for a in A }] 
+    for b in BAs:
+        NSA[('B',b)] = 0
+        Q[0][('B',b)] = 0
+        Q[1][('B',b)] = 0
     for i in range(100000):
         s = s0
         gameover = False
@@ -57,7 +67,10 @@ def DQ(P, s0=(0,0), rate=.1, DoubleQ=True):
             x = x * (1 if DoubleQ else 0)
             QA, QB = Q[x], Q[1-x]
             
-            QAB = { (s,a): Q[0][(s,a)] + Q[1][(s,a)] for a in A }
+            AA = A
+            if s=='B':
+                AA = BAs
+            QAB = { (s,a): Q[0][(s,a)] + Q[1][(s,a)] for a in AA }
         
             a = Q_select( QAB if DoubleQ else QA, s )
             
@@ -86,7 +99,9 @@ def DQ(P, s0=(0,0), rate=.1, DoubleQ=True):
     print('\nQ1')
     print(Q[1])
     #Qdisp(Q[1])
-    QAB = { (ss,aa): Q[0][(ss,aa)] + Q[1][(ss,aa)] for aa in A for ss in S }
+    QAB = { (ss,aa): Q[0][(ss,aa)] + Q[1][(ss,aa)] for aa in A for ss in SS }
+    for b in BAs:
+        QAB[('B',b)] = Q[0][('B',b)] + Q[1][('B',b)]
     print('\n')
     print({ss:Q_select(QAB, ss) for ss in S})
     input()
@@ -95,3 +110,6 @@ def DQ(P, s0=(0,0), rate=.1, DoubleQ=True):
 
 P = Build_MDP()
 DQ(P, 'A', DoubleQ=True)
+DQ(P, 'A', DoubleQ=False)
+
+
