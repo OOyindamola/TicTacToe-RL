@@ -104,6 +104,14 @@ def any_iso_in_list(b):
             return True
     return False
 
+
+def iso_reduce(s):
+    X = iso_list(s)
+    for x in X:
+        if x in S:
+            return x
+    return 'error'
+
 def get_candidates(s,k):
     cands = []
     for i in rng:
@@ -112,6 +120,9 @@ def get_candidates(s,k):
                 cands.append((i,j,k))
     return cands 
 
+
+def get_S():
+    return gen_S(get_blank(), 1)
 
 def gen_S(board,k):
     if any_iso_in_list(board):
@@ -124,17 +135,17 @@ def gen_S(board,k):
     
     Cs = get_candidates(board,k)
     mvs = [move(board,a) for a in Cs]
-    #print([board_string(m) for m in mvs])
 
     for m in mvs:
         gen_S(m,k*-1)
     
     return S#[board_string(board)] + S
 
-def gen_A():
+def get_A():
     return [(i,j,1) for i in rng for j in rng]
 
-
+def get_start():
+    return board_string(get_blank())
 
 A = [(i,j,k) for i in rng for j in rng for k in [-1,1]]
 A = [(i,j) for i in rng for j in rng]
@@ -143,9 +154,11 @@ def strat_rand(s,k):
     return ( int(ra()*3), int(ra()*3), k )
 
 def strat_rand_legal(s,k):
-    cands = get_candidates
-    k = len(cands)
-    return cands[int(ra()*k)]
+    cands = get_candidates(s,k)
+    l = len(cands)
+    if l==0:
+        return 'error'
+    return cands[int(ra()*l)]
 
 def strat_optimal(s,k):
     cands = get_candidates(s,k)
@@ -157,27 +170,33 @@ def strat_optimal(s,k):
 
 def build_P(strat=strat_rand_legal):
     def P(s,a):
+        sb, bs, h = string_board, board_string, iso_reduce
+        
+        s = sb(s)
         x = check_win(s)
         if not x==0:
-            return s,x
+            return h(s),x
 
         i,j,k = a[0], a[1], a[2]
         if not check_move(s,a):
-            return s,-10*k
+            return h(s),-10*k
         
         s[i][j] = k
         x = check_win(s)
         if not x==0:
-            return s,x
+            return h(s),x
         
         move = strat(s,k*-1)
+        if move=='error':
+            return h(s),0
+
         s[move[0]][move[1]] = k*-1
         
         x = check_win(s)
         if not x==0:
-            return s,x
+            return h(s),x*100
        
-        return s,0
+        return h(s),0
         
 
     return P
