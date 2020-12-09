@@ -2,6 +2,7 @@ import random as ra
 from display import display2
 import numpy as np
 import TicTacToe as ttt
+from display import ttt_disp
 
 GAMMA = float(input())
 
@@ -41,6 +42,20 @@ def Q_select( Q, s ):
             maxa = a
     return maxa
 
+def mat_print(Q,k):
+    if k == -1:
+        return
+    ans = ''
+    rng = range(3)
+    for i in rng:
+        for j in rng:
+            x = Q[(i,j,k)]
+            x = int( x * 100 ) / 100
+            ans = ans + str(x) + "&"
+        ans = ans[:-1] + '\\\\'
+    print(ans[:-2])
+
+
 def DQ(P, s0, rate=1, DoubleQ=True):
     NSA = {(s,a):0 for s in SS for a in A}
     Q = [{ (s,a):0 for s in SS for a in A },{ (s,a):0 for s in SS for a in A }] 
@@ -73,29 +88,68 @@ def DQ(P, s0, rate=1, DoubleQ=True):
 
             s = s2
     
+    return Q
+
+
+def query(Q):
     QA = Q[0]
     while True:
         s = input()
         s = ttt.iso_reduce(ttt.string_board(s))
         print(s)
+        print('\n' + ttt_disp(s) + '\n')
         Q_disp = {a: QA[(s,a)] for a in A}
-        print(Q_disp)
-
-    print('\n--------------\n\nQ0:')
-    print(Q[0])
-    #Qdisp(Q[0])
-    print('\nQ1')
-    print(Q[1])
-    #Qdisp(Q[1])
-    QAB = { (ss,aa): Q[0][(ss,aa)] + Q[1][(ss,aa)] for aa in A for ss in SS }
-    print('\n')
-    print({ss:Q_select(QAB, ss) for ss in S})
-    input()
+        Q_disp2= [QA[(s,a)] for a in A]
+        mat_print(Q_disp,1)
+        b = ttt.string_board(s)
 
 
+def play(Q):    
+    QA = Q[0]
+    gg = False
+    s = '111111111'
+    k = 1
+    while not gg:
+        s = ttt.iso_reduce(ttt.string_board(s))
+        print(s)
+        print('\n' + ttt_disp(s) + '\n')
+        Q_disp = {a: QA[(s,a)] for a in A}
+        Q_disp2= [QA[(s,a)] for a in A]
+        mat_print(Q_disp,k)
+        b = ttt.string_board(s)
 
-P = ttt.build_P()
-DQ(P, ttt.get_start(), DoubleQ=True)
-DQ(P, ttt.get_start(), DoubleQ=False)
+        if k==1:
+            i,j = int(input()), int(input()) 
+        else:
+            a = ttt.strat_optimal(ttt.string_board(s),k)
+            i,j = a[0],a[1]
+            print(a)
+
+        new_s = ttt.string_board(s)
+        new_s[i][j] = k
+        s = ttt.iso_reduce(new_s)
+        k = k*-1
+
+        gg = (i==-1)
+
+
+
+
+P = ttt.build_P(ttt.strat_rand)
+Q_double = DQ(P, ttt.get_start(), DoubleQ=True, rate=.5)
+#Q = DQ(P, ttt.get_start(), DoubleQ=False, rate = .5)
+
+#play(Q_double)
+query(Q_double)
+
+# x|_|_
+# _|x|o
+#  | |o
+
+[ [0,0,0],[-1,1,0],[0,0,0] ]
+'111 021 111'
+'100 121 211'
+'211 120 110'
+
 
 

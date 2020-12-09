@@ -110,6 +110,8 @@ def iso_reduce(s):
     for x in X:
         if x in S:
             return x
+    print(s)
+    print(len(S))
     return 'error'
 
 def get_candidates(s,k):
@@ -138,7 +140,6 @@ def gen_S(board,k):
 
     for m in mvs:
         gen_S(m,k*-1)
-    
     return S#[board_string(board)] + S
 
 def get_A():
@@ -149,6 +150,7 @@ def get_start():
 
 A = [(i,j,k) for i in rng for j in rng for k in [-1,1]]
 A = [(i,j) for i in rng for j in rng]
+
 def strat_rand(s,k):
     board = [[s[i][j]*k for j in rng] for i in rng]
     return ( int(ra()*3), int(ra()*3), k )
@@ -160,44 +162,81 @@ def strat_rand_legal(s,k):
         return 'error'
     return cands[int(ra()*l)]
 
-def strat_optimal(s,k):
-    cands = get_candidates(s,k)
+
+def has_win(s,k):
+    Cs = get_candidates(s,k)
+    mvs = [move(s,a) for a in Cs]
+    mv_rng = range(len(mvs))
     
-    # check for win
-    for a in cands:
-        0
+    #check win
+    for i in mv_rng:
+        if check_win(mvs[i])*k > 0:
+            return Cs[i]
+
+    return ''
+
+
+def strat_optimal(s,k):
+    Cs = get_candidates(s,k)
+    mvs = [move(s,a) for a in Cs]
+    mv_rng = range(len(mvs))
+
+    a = has_win(s,k)
+    if not a=='':
+        return a
+    
+    for i in mv_rng:
+        if has_win(mvs[i],-1*k)=='':
+            return Cs[i]
+    return strat_rand_legal(s,k)
+
+
+def full(s):
+    for c in s:
+        if c=='1':
+            return False
+    return True
 
 
 def build_P(strat=strat_rand_legal):
     def P(s,a):
         sb, bs, h = string_board, board_string, iso_reduce
         
+        ss = s
         s = sb(s)
         x = check_win(s)
         if not x==0:
             return h(s),x
 
+        if full(ss):
+            return h(s),0
+
         i,j,k = a[0], a[1], a[2]
         if not check_move(s,a):
-            return h(s),-10*k
+            return h(s),-1*k
         
         s[i][j] = k
         x = check_win(s)
         if not x==0:
-            return h(s),x
+            return h(s),x*10
         
-        move = strat(s,k*-1)
-        if move=='error':
-            return h(s),0
+        r,count = 0,0
+        while not check_move(s,a) and count < 100: 
+            mv = strat(s,k*-1)
+            if mv=='error':
+                return h(s),0 
+            count = count + 1
+            r = r + -1*k
 
-        s[move[0]][move[1]] = k*-1
+        if count > 99:
+            return h([[1,1,1] for i in rng]), r
+        s = move(s, mv)
         
         x = check_win(s)
         if not x==0:
-            return h(s),x*100
+            return h(s),x*10
        
-        return h(s),0
-        
+        return h(s),r
 
     return P
 

@@ -19,3 +19,20 @@ def display2(V, fun=round):
 
     print(ans[:-4])
 
+base_string ='''
+    |    | 
+  {} | {}  | {} 
+----------------
+    |    | 
+  {} | {}  | {}
+-----------------
+    |    | 
+  {} | {}  | {} 
+
+'''
+char_map = {'0':'O', '2':'X', '1':' '}
+def ttt_disp(board_string):
+    a = [char_map[c] for c in board_string]
+    return base_string.format(a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8])
+
+

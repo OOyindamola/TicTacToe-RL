@@ -11,6 +11,7 @@ A = ['l', 'r']
 BAs = range(10)
 
 def Build_MDP():
+
     def P(s,a):
         if s=='A':
             if a=='l':
@@ -23,6 +24,7 @@ def Build_MDP():
             return 'OVER',0
         if s=='D':
             return 'OVER',0
+    
     return P
 
 
@@ -58,7 +60,7 @@ def DQ(P, s0='A', rate=.1, DoubleQ=True):
         NSA[('B',b)] = 0
         Q[0][('B',b)] = 0
         Q[1][('B',b)] = 0
-    for i in range(100000):
+    for i in range(100):
         s = s0
         gameover = False
         while not gameover:
@@ -108,8 +110,8 @@ def DQ(P, s0='A', rate=.1, DoubleQ=True):
 
 
 
-P = Build_MDP()
-DQ(P, 'A', DoubleQ=True)
-DQ(P, 'A', DoubleQ=False)
+#P = Build_MDP()
+#DQ(P, 'A', DoubleQ=True)
+#DQ(P, 'A', DoubleQ=False)
 
 
